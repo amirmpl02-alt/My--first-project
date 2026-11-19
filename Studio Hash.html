@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>আমার ডিজিটাল স্টুডিও — ফটোকপি ও প্রিন্ট ম্যানেজার</title>
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #1d4ed8;
+            --primary-dark: #1e40af;
+            --bg: #f8fafc;
+            --card: #ffffff;
+            --text: #0f172a;
+            --muted: #64748b;
+            --border: #e2e8f0;
+            --success: #16a34a;
+            --danger: #dc2626;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Hind Siliguri', sans-serif; }
+        body { background: var(--bg); color: var(--text); line-height: 1.6; }
+        
+        /* Navbar */
+        header {
+            background: var(--card);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .logo { font-size: 1.5rem; font-weight: 700; color: var(--primary); display: flex; align-items: center; gap: 8px; }
+        .badge { background: #dbeafe; color: var(--primary); font-size: 0.75rem; padding: 2px 8px; border-radius: 99px; }
+
+        /* Hero */
+        .hero {
+            text-align: center;
+            padding: 2.5rem 5% 1.5rem;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .hero h1 { font-size: 2rem; font-weight: 700; margin-bottom: 0.5rem; color: #0f172a; }
+        .hero p { color: var(--muted); font-size: 1.05rem; }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 1.5rem auto;
+            flex-wrap: wrap;
+            padding: 0 5%;
+        }
+        .tab-btn {
+            padding: 10px 20px;
+            border: 1px solid var(--border);
+            background: var(--card);
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .tab-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+
+        /* Container */
+        .container { max-width: 1100px; margin: 0 auto 3rem; padding: 0 5%; }
+        .panel { display: none; background: var(--card); padding: 2rem; border-radius: 12px; border: 1px solid var(--border); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+        .panel.active { display: block; }
+
+        /* Forms & Controls */
+        .grid-2 { display: grid; grid-template-columns: 1fr 2fr; gap: 2rem; }
+        @media (max-width: 768px) { .grid-2 { grid-template-columns: 1fr; } }
+        
+        .form-group { margin-bottom: 1rem; }
+        label { display: block; font-weight: 600; margin-bottom: 5px; font-size: 0.95rem; }
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 1rem;
+        }
+        .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 5px;
+        }
+        .btn:hover { background: var(--primary-dark); }
+        .btn-success { background: var(--success); }
+        .btn-danger { background: var(--danger); padding: 4px 10px; font-size: 0.85rem; }
+
+        /* Canvas Preview */
+        .preview-box {
+            background: #e2e8f0;
+            padding: 20px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: auto;
+            min-height: 400px;
+        }
+        canvas {
+            background: white;
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+            max-width: 100%;
+            height: auto;
+        }
+
+        /* Table */
+        table { width: 100%; border-collapse: collapse; margin-top: 1.5rem; }
+        th, td { text-align: left; padding: 12px; border-bottom: 1px solid var(--border); }
+        th { background: #f1f5f9; font-weight: 600; }
+        .status-paid { color: var(--success); font-weight: 600; }
+        .status-due { color: var(--danger); font-weight: 600; }
+
+        /* Print Styling */
+        @media print {
+            body * { visibility: hidden; }
+            .print-area, .print-area * { visibility: visible; }
+            .print-area { position: fixed; left: 0; top: 0; width: 100%; margin: 0; padding: 0; box-shadow: none; }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="logo">📸 ডিজিটাল স্টুডিও <span class="badge">১০০% ফ্রি সংস্করণ</span></div>
+    <div style="font-size: 0.9rem; color: var(--muted);">অফলাইন ও ব্রাউজার ভিত্তিক</div>
+</header>
+
+<section class="hero">
+    <h1>ফটোকপি, প্রিন্ট ও ছবির দোকানের সব কাজ এক জায়গায়!</h1>
+    <p>পাসপোর্ট ছবি শিট, আইডি কার্ড A4 লেআউট এবং কাস্টমারের হিসাব রাখুন একদম বিনামূল্যে।</p>
+</section>
+
+<div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('passport', this)">📸 পাসপোর্ট ছবি শিট</button>
+    <button class="tab-btn" onclick="switchTab('nid', this)">🪪 আইডি কার্ড (A4)</button>
+    <button class="tab-btn" onclick="switchTab('customers', this)">📁 কাস্টমার ও কাজের হিসাব</button>
+</div>
+
+<div class="container">
+    <!-- Tab 1: Passport Photo Sheet -->
+    <div id="passport" class="panel active">
+        <div class="grid-2">
+            <div>
+                <h3 style="margin-bottom: 1rem;">পাসপোর্ট শিট সেটিংস</h3>
+                <div class="form-group">
+                    <label>১. কাস্টমারের ছবি নির্বাচন করুন</label>
+                    <input type="file" id="ppInput" accept="image/*" onchange="generatePassportSheet()">
+                </div>
+                <div class="form-group">
+                    <label>২. ছবির সংখ্যা (A4 কাগজে)</label>
+                    <select id="ppCount" onchange="generatePassportSheet()">
+                        <option value="4">৪ কপি (১ লাইন)</option>
+                        <option value="8" selected>৮ কপি (২ লাইন)</option>
+                        <option value="12">১২ কপি (৩ লাইন)</option>
+                        <option value="16">১৬ কপি (৪ লাইন)</option>
+                        <option value="20">২০ কপি (৫ লাইন)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>৩. বর্ডার (কাটার সুবিধার্থে)</label>
+                    <select id="ppBorder" onchange="generatePassportSheet()">
+                        <option value="true" selected>হালকা কালো বর্ডার দিন</option>
+                        <option value="false">বর্ডার ছাড়া</option>
+                    </select>
+                </div>
+                <button class="btn btn-success" onclick="printCanvas('ppCanvas')">🖨️ প্রিন্ট করুন</button>
+                <button class="btn" onclick="downloadCanvas('ppCanvas', 'passport-sheet.png')">⬇️ ডাউনলোড PNG</button>
+            </div>
+            <div class="preview-box">
+                <canvas id="ppCanvas" width="794" height="1123"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tab 2: NID Card A4 -->
+    <div id="nid" class="panel">
+        <div class="grid-2">
+            <div>
+                <h3 style="margin-bottom: 1rem;">আইডি কার্ড A4 লেআউট</h3>
+                <div class="form-group">
+                    <label>১. সামনের অংশ (Front Side)</label>
+                    <input type="file" id="nidFront" accept="image/*" onchange="generateNIDSheet()">
+                </div>
+                <div class="form-group">
+                    <label>২. পেছনের অংশ (Back Side)</label>
+                    <input type="file" id="nidBack" accept="image/*" onchange="generateNIDSheet()">
+                </div>
+                <button class="btn btn-success" onclick="printCanvas('nidCanvas')">🖨️ প্রিন্ট করুন</button>
+                <button class="btn" onclick="downloadCanvas('nidCanvas', 'nid-a4-sheet.png')">⬇️ ডাউনলোড PNG</button>
+            </div>
+            <div class="preview-box">
+                <canvas id="nidCanvas" width="794" height="1123"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tab 3: Customer Job Tracker -->
+    <div id="customers" class="panel">
+        <h3 style="margin-bottom: 1rem;">নতুন কাস্টমার / জব যোগ করুন</h3>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px;">
+            <input type="text" id="custName" placeholder="কাস্টমারের নাম">
+            <input type="text" id="custPhone" placeholder="মোবাইল নম্বর">
+            <select id="jobType">
+                <option value="পাসপোর্ট ছবি">পাসপোর্ট ছবি</option>
+                <option value="আইডি কার্ড প্রিন্ট">আইডি কার্ড প্রিন্ট</option>
+                <option value="ডকুমেন্ট ফটোকপি/স্ক্যান">ডকুমেন্ট ফটোকপি/স্ক্যান</option>
+                <option value="সিভি ও টাইপিং">সিভি ও টাইপিং</option>
+            </select>
+            <input type="number" id="jobAmount" placeholder="টাকার পরিমাণ (৳)">
+            <select id="jobStatus">
+                <option value="পরিশোধিত">পরিশোধিত (Paid)</option>
+                <option value="বাকি">বাকি (Due)</option>
+            </select>
+            <button class="btn" onclick="addJob()">+ যোগ করুন</button>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>তারিখ</th>
+                    <th>কাস্টমার</th>
+                    <th>মোবাইল</th>
+                    <th>কাজের ধরন</th>
+                    <th>বিল (৳)</th>
+                    <th>অবস্থা</th>
+                    <th>অ্যাকশন</th>
+                </tr>
+            </thead>
+            <tbody id="jobTableBody"></tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    // Tab Switching
+    function switchTab(tabId, btn) {
+        document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById(tabId).classList.add('active');
+        btn.classList.add('active');
+    }
+
+    // Initialize Canvases with White A4 Background
+    function clearCanvas(canvasId) {
+        const canvas = document.getElementById(canvasId);
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        return { canvas, ctx };
+    }
+    clearCanvas('ppCanvas');
+    clearCanvas('nidCanvas');
+
+    // 1. Passport Photo Generator (Standard 40mm x 50mm ratio -> ~150px x 190px on 96DPI A4)
+    function generatePassportSheet() {
+        const file = document.getElementById('ppInput').files[0];
+        if (!file) return;
+        const count = parseInt(document.getElementById('ppCount').value);
+        const hasBorder = document.getElementById('ppBorder').value === 'true';
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const img = new Image();
+            img.onload = function() {
+                const { canvas, ctx } = clearCanvas('ppCanvas');
+                const cols = 4;
+                const photoW = 152; // ~40mm
+                const photoH = 190; // ~50mm
+                const gapX = 28;
+                const gapY = 25;
+                const startX = (canvas.width - (cols * photoW + (cols - 1) * gapX)) / 2;
+                const startY = 40;
+
+                for (let i = 0; i < count; i++) {
+                    const r = Math.floor(i / cols);
+                    const c = i % cols;
+                    const x = startX + c * (photoW + gapX);
+                    const y = startY + r * (photoH + gapY);
+
+                    ctx.drawImage(img, x, y, photoW, photoH);
+                    if (hasBorder) {
+                        ctx.strokeStyle = "#94a3b8";
+                        ctx.lineWidth = 1;
+                        ctx.strokeRect(x, y, photoW, photoH);
+                    }
+                }
+            };
+            img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+    }
+
+    // 2. NID Card Generator (Standard CR80 ~85.6mm x 54mm -> ~324px x 204px)
+    let frontImg = null, backImg = null;
+    function generateNIDSheet() {
+        const fFile = document.getElementById('nidFront').files[0];
+        const bFile = document.getElementById('nidBack').files[0];
+
+        if (fFile) {
+            const r1 = new FileReader();
+            r1.onload = e => { frontImg = new Image(); frontImg.onload = drawNID; frontImg.src = e.target.result; };
+            r1.readAsDataURL(fFile);
+        }
+        if (bFile) {
+            const r2 = new FileReader();
+            r2.onload = e => { backImg = new Image(); backImg.onload = drawNID; backImg.src = e.target.result; };
+            r2.readAsDataURL(bFile);
+        }
+    }
+
+    function drawNID() {
+        const { canvas, ctx } = clearCanvas('nidCanvas');
+        const cardW = 324;
+        const cardH = 204;
+        const x = (canvas.width - cardW) / 2;
+
+        if (frontImg) {
+            ctx.drawImage(frontImg, x, 120, cardW, cardH);
+            ctx.strokeStyle = "#cbd5e1";
+            ctx.strokeRect(x, 120, cardW, cardH);
+        }
+        if (backImg) {
+            ctx.drawImage(backImg, x, 360, cardW, cardH);
+            ctx.strokeStyle = "#cbd5e1";
+            ctx.strokeRect(x, 360, cardW, cardH);
+        }
+    }
+
+    // Print & Download Helpers
+    function downloadCanvas(canvasId, filename) {
+        const link = document.createElement('a');
+        link.download = filename;
+        link.href = document.getElementById(canvasId).toDataURL('image/png');
+        link.click();
+    }
+
+    function printCanvas(canvasId) {
+        const dataUrl = document.getElementById(canvasId).toDataURL('image/png');
+        const win = window.open('', '_blank');
+        win.document.write(`<img src="${dataUrl}" style="width:100%;max-width:794px;" onload="window.print();window.close();">`);
+    }
+
+    // 3. Customer Tracker (LocalStorage)
+    let jobs = JSON.parse(localStorage.getItem('studio_jobs') || '[]');
+
+    function renderJobs() {
+        const tbody = document.getElementById('jobTableBody');
+        tbody.innerHTML = '';
+        jobs.forEach((job, index) => {
+            const statusClass = job.status === 'পরিশোধিত' ? 'status-paid' : 'status-due';
+            tbody.innerHTML += `
+                <tr>
+                    <td>${job.date}</td>
+                    <td><strong>${job.name}</strong></td>
+                    <td>${job.phone}</td>
+                    <td>${job.type}</td>
+                    <td>৳${job.amount}</td>
+                    <td class="${statusClass}">${job.status}</td>
+                    <td><button class="btn btn-danger" onclick="deleteJob(${index})">মুছুন</button></td>
+                </tr>
+            `;
+        });
+    }
+
+    function addJob() {
+        const name = document.getElementById('custName').value.trim();
+        const phone = document.getElementById('custPhone').value.trim();
+        const type = document.getElementById('jobType').value;
+        const amount = document.getElementById('jobAmount').value;
+        const status = document.getElementById('jobStatus').value;
+
+        if (!name || !amount) return alert('অনুগ্রহ করে কাস্টমারের নাম ও টাকার পরিমাণ দিন।');
+
+        const date = new Date().toLocaleDateString('bn-BD');
+        jobs.unshift({ date, name, phone, type, amount, status });
+        localStorage.setItem('studio_jobs', JSON.stringify(jobs));
+
+        document.getElementById('custName').value = '';
+        document.getElementById('custPhone').value = '';
+        document.getElementById('jobAmount').value = '';
+        renderJobs();
+    }
+
+    function deleteJob(index) {
+        jobs.splice(index, 1);
+        localStorage.setItem('studio_jobs', JSON.stringify(jobs));
+        renderJobs();
+    }
+
+    renderJobs();
+</script>
+</body>
+</html>
